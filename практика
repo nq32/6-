@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main() {
+    char filename[256];
+    char *content = NULL;
+    size_t content_size = 0;
+    int found_privet = 0;
+
+    // Читаем имя файла (первая строка)
+    if (fgets(filename, sizeof(filename), stdin) == NULL) {
+        fprintf(stderr, "Ошибка чтения имени файла\n");
+        return 1;
+    }
+    // Убираем символ переноса строки из имени файла
+    filename[strcspn(filename, "\r\n")] = 0;
+
+    // Читаем содержимое файла построчно
+    char line[1024];
+    while (fgets(line, sizeof(line), stdin) != NULL) {
+        // Проверяем, есть ли в строке слово "Привет"
+        if (strstr(line, "Привет") != NULL) {
+            found_privet = 1;
+        }
+
+        // Добавляем строку к содержимому
+        size_t line_len = strlen(line);
+        char *new_content = realloc(content, content_size + line_len + 1);
+        if (!new_content) {
+            fprintf(stderr, "Ошибка выделения памяти\n");
+            free(content);
+            return 1;
+        }
+        content = new_content;
+        memcpy(content + content_size, line, line_len);
+        content_size += line_len;
+        content[content_size] = '\0';
+    }
+
+    // Выводим результаты
+    printf("Имя файла: %s\n", filename);
+    printf("Содержимое файла:\n%s", content ? content : "");
+    printf("\nСлово \"Привет\" %s в тексте.\n", found_privet ? "содержится" : "не содержится");
+
+    free(content);
+
+    return 0;
+}
